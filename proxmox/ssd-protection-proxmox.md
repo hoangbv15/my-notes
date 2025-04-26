@@ -102,14 +102,16 @@ This seems to relate to ```pvestatd```, which is a service that deals with statu
 
 https://pve.proxmox.com/wiki/Service_daemons
 
-I'm not sure what exactly ```rrdcached``` do. It seems to be possible to disable it with
 ```
 systemctl disable rrdcached.service
+```
+Turning this off will cause the graphs on the Web UI to stop working, which is not a big deal. We could also do
+```
 systemctl disable pvestatd
 ```
-I will try to disable it and observe.
+But this will make the Web UI lose vital information, such as VM names, status, CPU usage, memory usage, disk usage, etc. Plus, it doesn't cause any less IO. So we can leave this on.
 
-If we must have it running, here are some things that can reduce its disk flushing frequency:
+If we must have rrdcached running, here are some things that can reduce its disk flushing frequency:
 - Enabled ```WRITE_TIMEOUT=3600``` and add ```FLUSH_TIMEOUT=7200``` in ```/etc/defaults/rrdcached``` config file to reduce disk IOPS. 
 - Disabled ```JOURNAL_PATH=/var/lib/rrdcached/journal/``` in ```/etc/defaults/rrdcached``` config file to reduce disk IOPS.
 - Added ```${FLUSH_TIMEOUT:+-f ${FLUSH_TIMEOUT}} \``` to ```/etc/init.d/rrdcached```
@@ -145,8 +147,21 @@ Here are the folders we want to host in RAM:
 - ```/var/lib/pve-cluster```
 - ```/var/lib/pve-manager``` (not sure if we need this to add this one, need to do more research)
 - ```/var/lib/rrdcached```
+- ```/var/spool```
 
 Let's configure log2ram by editing ```/etc/log2ram.conf```
 - Change ```SIZE=40M``` to ```SIZE=400M```. 10x the original size is still only 0.3% of 128GB, to minimize risk of overflow. Put what you feel comfortable with on your system
 - Change ```PATH_DISK="/var/log"``` to
-```PATH_DISK="/var/log;/var/lib/pve-cluster;/var/lib/rrdcached"```
+```PATH_DISK="/var/log;/var/lib/pve-cluster;/var/lib/rrdcached;/var/lib/pve-manager;/var/spool"```
+
+### jdb2 (kindof)
+
+This is a kernel process in charge to journaling. This basically means it's not the culprit causing the IO, but another process is.
+
+### smartmontools / smartd
+
+For some reason, this preinstalled package has a service that continually writes logs to disk, but it doesn't show up in iotop. The service smartd, part of smartmontools, is in charge of updating SMART statuses of disks on the Web UI. Since we can always use the commandline tool, we can disable the service.
+```
+systemctl disable smartd
+```
+
