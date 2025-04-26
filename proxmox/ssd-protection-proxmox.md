@@ -8,6 +8,35 @@
 
 Proxmox by default writes frequent logs to the drive that you installed it in. There's a high chance you used an SSD for this. So here are some relevant info on how to limit frequent writing to the drive.
 
+## Monitor SSD writes
+This can be done by installing ```iotop```
+```
+apt install iotop
+```
+This will show us all the current processes that cause disk reads and writes.
+From this, I have discovered 4 more things that are causing writes to the disk: kvm, jbd2, pmxcfs and rrdcached.
+
+To see monitor SMART status of disks, do
+```
+smartctl -a /dev/sdc
+```
+where ```sdc``` is the disk you want to monitor. Pressing tab after typing ```smartctl -a /dev/``` should display a list of all disks.
+
+Another tool is ```iostat```, which can be installed with 
+```
+apt install sysstat
+```
+This tool shows the IO rate of all devices, but I found it to not be very accurate. Either that or I haven't found a way to read the stats properly.
+
+One more tool is ```fatrace```
+```
+apt install fatrace
+```
+Which can monitor which files are having disk operations. We can filter to only see Write operations with
+```
+fatrace -f W
+```
+
 ## Use zram for swap
 https://pve.proxmox.com/wiki/Zram
 
@@ -66,35 +95,6 @@ systemctl disable --now pve-ha-crm.service
 systemctl disable --now pve-ha-lrm.service
 systemctl disable --now pvesr.timer
 systemctl disable --now corosync.service
-```
-
-## Monitor SSD writes
-This can be done by installing ```iotop```
-```
-apt install iotop
-```
-This will show us all the current processes that cause disk reads and writes.
-From this, I have discovered 4 more things that are causing writes to the disk: kvm, jbd2, pmxcfs and rrdcached.
-
-To see monitor SMART status of disks, do
-```
-smartctl -a /dev/sdc
-```
-where ```sdc``` is the disk you want to monitor. Pressing tab after typing ```smartctl -a /dev/``` should display a list of all disks.
-
-Another tool is ```iostat```, which can be installed with 
-```
-apt install sysstat
-```
-This tool shows the IO rate of all devices, but I found it to not be very accurate. Either that or I haven't found a way to read the stats properly.
-
-One more tool is ```fatrace```
-```
-apt install fatrace
-```
-Which can monitor which files are having disk operations. We can filter to only see Write operations with
-```
-fatrace -f W
 ```
 
 ### rrdcached
