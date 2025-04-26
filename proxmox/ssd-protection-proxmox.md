@@ -82,6 +82,21 @@ smartctl -a /dev/sdc
 ```
 where ```sdc``` is the disk you want to monitor. Pressing tab after typing ```smartctl -a /dev/``` should display a list of all disks.
 
+Another tool is ```iostat```, which can be installed with 
+```
+apt install sysstat
+```
+This tool shows the IO rate of all devices, but I found it to not be very accurate. Either that or I haven't found a way to read the stats properly.
+
+One more tool is ```fatrace```
+```
+apt install fatrace
+```
+Which can monitor which files are having disk operations. We can filter to only see Write operations with
+```
+fatrace -f W
+```
+
 ### rrdcached
 This seems to relate to ```pvestatd```, which is a service that deals with status and graphs.
 
