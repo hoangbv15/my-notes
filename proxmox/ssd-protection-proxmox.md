@@ -5,7 +5,6 @@
 > [!WARNING]  
 > These are only info that I gathered, I have not tested them
 
-
 Proxmox by default writes frequent logs to the drive that you installed it in. There's a high chance you used an SSD for this. So here are some relevant info on how to limit frequent writing to the drive.
 
 ## Monitor SSD writes
@@ -16,7 +15,11 @@ apt install iotop
 This will show us all the current processes that cause disk reads and writes.
 From this, I have discovered 4 more things that are causing writes to the disk: kvm, jbd2, pmxcfs and rrdcached.
 
-For kvm, I believe the writes that iotop is showing are to in-memory pipes and sockets rather than actual disk. I couldn't find any extra clues, and the amount reported by iotop is way more than what's being written to disk, which can be determined with smartctl. For the other processes, see their own sections.
+For kvm, I believe the writes that iotop is showing are to in-memory pipes and sockets rather than actual disk. I couldn't find any extra clues, and the amount reported by iotop is way more than what's being written to disk, which can be determined with smartctl. 
+
+jbd2 is a kernel process in charge to journaling. This basically means it's not the culprit causing the IO, but another process is.
+
+For the other processes, see their own sections.
 
 To see monitor SMART status of disks, do
 ```
@@ -99,7 +102,7 @@ systemctl disable --now pvesr.timer
 systemctl disable --now corosync.service
 ```
 
-### rrdcached
+## rrdcached
 This seems to relate to ```pvestatd```, which is a service that deals with status and graphs.
 
 https://pve.proxmox.com/wiki/Service_daemons
@@ -155,10 +158,6 @@ Let's configure log2ram by editing ```/etc/log2ram.conf```
 - Change ```SIZE=40M``` to ```SIZE=400M```. 10x the original size is still only 0.3% of 128GB, to minimize risk of overflow. Put what you feel comfortable with on your system
 - Change ```PATH_DISK="/var/log"``` to
 ```PATH_DISK="/var/log;/var/lib/pve-cluster;/var/lib/rrdcached;/var/lib/pve-manager;/var/spool"```
-
-## jdb2 (kindof)
-
-This is a kernel process in charge to journaling. This basically means it's not the culprit causing the IO, but another process is.
 
 ## smartmontools / smartd
 
