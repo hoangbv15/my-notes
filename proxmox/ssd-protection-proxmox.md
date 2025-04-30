@@ -3,9 +3,9 @@
 # SSD Protection in Proxmox
 
 > [!WARNING]  
-> These are only info that I gathered, I have not tested them
+> These are info that I gathered. I have tested them, but not extensively. Treat them as anecdotal experiences. An update to Proxmox might break a few (or all) of them.
 
-Proxmox by default writes frequent logs to the drive that you installed it in. There's a high chance you used an SSD for this. So here are some relevant info on how to limit frequent writing to the drive.
+Proxmox by default writes frequent data to the drive that you installed it in. There's a high chance you used an SSD for this. So here are some relevant info on how to limit frequent writing to the drive.
 
 ## Monitor SSD writes
 This can be done by installing ```iotop```
