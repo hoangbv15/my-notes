@@ -165,3 +165,10 @@ For some reason, this preinstalled package has a service that continually writes
 systemctl disable smartd
 ```
 
+### Enable noatime
+
+By default, Linux (as well as MacOS) stores the access time for every file the OS reads, which results in a lot of writes. This is required for a small number of applications that we do not need. So we can disable it by editing the mount entry in /etc/fstab:
+```
+/dev/pve/root / ext4 errors=remount-ro,noatime 0 1
+```
+Note that I have ext4 because that's the format I chose for the Proxmox drive, yours might differ depending on what you chose.
