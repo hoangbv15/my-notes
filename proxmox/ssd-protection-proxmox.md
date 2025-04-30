@@ -3,7 +3,7 @@
 # SSD Protection in Proxmox
 
 > [!WARNING]  
-> These are info that I gathered. I have tested them, but not extensively. Treat them as anecdotal experiences. After doing all of these, I managed to bring the writes from several hundreds MBs to about 50 KB per hour.
+> These are info that I gathered. I have tested them, but not extensively. Treat them as anecdotal experiences. After doing all of these, I managed to bring the writes from several hundred MBs to about 50 KB per hour.
 
 Proxmox by default writes frequent data to the drive that you installed it in. There's a high chance you used an SSD for this. So here are some relevant info on how to limit frequent writing to the drive.
 
