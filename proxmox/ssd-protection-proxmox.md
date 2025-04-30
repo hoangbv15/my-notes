@@ -16,6 +16,8 @@ apt install iotop
 This will show us all the current processes that cause disk reads and writes.
 From this, I have discovered 4 more things that are causing writes to the disk: kvm, jbd2, pmxcfs and rrdcached.
 
+For kvm, I believe the writes that iotop is showing are to in-memory pipes and sockets rather than actual disk. I couldn't find any extra clues, and the amount reported by iotop is way more than what's being written to disk, which can be determined with smartctl. For the other processes, see their own sections.
+
 To see monitor SMART status of disks, do
 ```
 smartctl -a /dev/sdc
@@ -116,7 +118,7 @@ If we must have rrdcached running, here are some things that can reduce its disk
 - Disabled ```JOURNAL_PATH=/var/lib/rrdcached/journal/``` in ```/etc/defaults/rrdcached``` config file to reduce disk IOPS.
 - Added ```${FLUSH_TIMEOUT:+-f ${FLUSH_TIMEOUT}} \``` to ```/etc/init.d/rrdcached```
 
-### pmxcfs
+## pmxcfs
 This is a service that takes care of Proxmox VM configs. On disk, the configs are stored in a SQL database, and at runtime, this is copied to RAM, which the service keeps in sync with the disk version (using ```corosync```, which we disabled in a step above). However, this syncing happens every several seconds. Proxmox does this so that if you create a "cluster", the configs are synced to all machines in the cluster. This feature is meaningless to us since we don't use it.
 I believe this service is part of the High Availability services that we shut down in a step above. For some reason, this one is still running despite of that, I don't know why.
 
@@ -154,18 +156,18 @@ Let's configure log2ram by editing ```/etc/log2ram.conf```
 - Change ```PATH_DISK="/var/log"``` to
 ```PATH_DISK="/var/log;/var/lib/pve-cluster;/var/lib/rrdcached;/var/lib/pve-manager;/var/spool"```
 
-### jdb2 (kindof)
+## jdb2 (kindof)
 
 This is a kernel process in charge to journaling. This basically means it's not the culprit causing the IO, but another process is.
 
-### smartmontools / smartd
+## smartmontools / smartd
 
 For some reason, this preinstalled package has a service that continually writes logs to disk, but it doesn't show up in iotop. The service smartd, part of smartmontools, is in charge of updating SMART statuses of disks on the Web UI. Since we can always use the commandline tool, we can disable the service.
 ```
 systemctl disable smartd
 ```
 
-### Enable noatime
+## Enable noatime
 
 By default, Linux (as well as MacOS) stores the access time for every file the OS reads, which results in a lot of writes. This is required for a small number of applications that we do not need. So we can disable it by editing the mount entry in /etc/fstab:
 ```
