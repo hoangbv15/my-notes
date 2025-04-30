@@ -15,13 +15,13 @@ apt install iotop
 This will show us all the current processes that cause disk reads and writes.
 From this, I have discovered 4 more things that are causing writes to the disk: **kvm**, **jbd2**, **pmxcfs** and **rrdcached**.
 
-For **kvm**, I believe the writes that iotop is showing are to in-memory pipes and sockets rather than actual disk. I couldn't find any extra clues, and the amount reported by iotop is way more than what's being written to disk, which can be determined with smartctl. 
+For **kvm**, I believe the writes that **iotop** is showing are to in-memory pipes and sockets rather than actual disk. I couldn't find any extra clues, and the amount reported by iotop is way more than what's being written to disk, which can be determined with smartctl. 
 
-**jbd2** is a kernel process in charge to journaling. This basically means it's not the culprit causing the IO, but another process is.
+**jbd2** is a kernel process in charge of journaling. This basically means it's not the culprit causing the IO, but another process is.
 
 For the other processes, see their own sections.
 
-To see monitor SMART status of disks, do
+To see SMART status of our disk, do
 ```
 smartctl -a /dev/sdc
 ```
@@ -33,17 +33,17 @@ Another tool is **iostat**, which can be installed with
 ```
 apt install sysstat
 ```
-This tool shows the IO rate of all devices, but I found it to not be very accurate. Either that or I haven't found a way to read the stats properly.
+This tool shows the IO rate of all devices, but I found it to be not very accurate. Either that or I haven't found a way to read the stats properly.
 
 One more tool is **fatrace**
 ```
 apt install fatrace
 ```
-Which can monitor which files are having disk operations. We can filter to only see Write operations with
+This can monitor which files are having disk operations. We can filter to only see Write operations with
 ```
 fatrace -f W
 ```
-There is another tool called **csysdig** that some people like, which is a part of the package **sysdig**. However I won't be using this, as installing it on Proxmox requires installing a bizillion other packages and more than 600MB of disk space.
+There is another tool called **csysdig** that some people like, which is a part of the package **sysdig**. However I won't be using this, as installing it on Proxmox requires installing a bazillion other packages and more than 600 MB of disk space.
 
 ## Use zram for swap
 https://pve.proxmox.com/wiki/Zram
@@ -106,7 +106,7 @@ systemctl disable --now corosync.service
 ```
 
 ## rrdcached
-This seems to relate to **pvestatd**, which is a service that deals with status and graphs.
+This seems to relate to **pvestatd**, a service that deals with status and graphs.
 
 https://pve.proxmox.com/wiki/Service_daemons
 
@@ -149,7 +149,7 @@ Also, **log2ram** can be configured to do the same thing too!
 
 https://github.com/Jahfry/Miscellaneous/blob/main/proxmoxVE/03.ProxmoxTweaks.md#03ciib-moving-other-stuff-to-ram
 
-The benefit of using **folder2ram** is only the ability to customise the size for each folder. With **log2ram** it is possible to specify only 2 size for everything.
+The benefit of using **folder2ram** is the ability to customise the size for each folder. With **log2ram** it is possible to specify only 1 size for everything.
 
 Here are the folders we want to host in RAM:
 - ```/var/log```
@@ -158,7 +158,7 @@ Here are the folders we want to host in RAM:
 - ```/var/lib/rrdcached```
 - ```/var/spool```
 
-Let's configure log2ram by editing `/etc/log2ram.conf`
+Let's configure **log2ram** by editing `/etc/log2ram.conf`
 - Change `SIZE=40M` to `SIZE=400M`. 10x the original size is still only 0.3% of 128GB, to minimize risk of overflow. Put what you feel comfortable with on your system
 - Change `PATH_DISK="/var/log"` to
 ```
@@ -167,14 +167,14 @@ PATH_DISK="/var/log;/var/lib/pve-cluster;/var/lib/rrdcached;/var/lib/pve-manager
 
 ## smartmontools / smartd
 
-For some reason, this preinstalled package has a service that continually writes logs to disk, but it doesn't show up in iotop. The service **smartd**, part of **smartmontools**, is in charge of updating SMART statuses of disks on the Web UI. Since we can always use the command line tool, we can disable the service.
+For some reason, this preinstalled package has a service that continually writes logs to disk, but it doesn't show up in **iotop**. The service **smartd**, part of **smartmontools**, is in charge of updating SMART statuses of disks on the Web UI. Since we can always use the command line tool, we can disable the service.
 ```
 systemctl disable smartd
 ```
 
 ## Enable noatime
 
-By default, Linux (as well as MacOS) stores the access time for every file the OS reads, which results in a lot of writes. This is required for a small number of applications that we do not need. So we can disable it by editing the mount entry in /etc/fstab:
+By default, Linux (as well as MacOS) stores the access time for every file the OS reads, which results in a lot of writes. This is required for a small number of applications that we do not need. So we can disable it by editing the mount entry in `/etc/fstab`:
 ```
 /dev/pve/root / ext4 errors=remount-ro,noatime 0 1
 ```
