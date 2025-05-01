@@ -1,11 +1,13 @@
 [Back to Proxmox](README.md)
 
-# System & Temperature Monitoring in Proxmox
+# System & Temperature Monitoring and optimisation in Proxmox
 
 Since the motherboard is not directly exposed to the VMs, we can't monitor temperatures of the CPU and motherboard directly in the VM.
 However, we can do this on the Proxmox host.
 
-## s-tui (preferred way)
+## Monitoring
+
+### s-tui (preferred way)
 My preferred way is to use a tool called [s-tui](https://github.com/amanusk/s-tui), which gives a nice graphical representation of the CPU speeds, temps and even power consumption, without the process view. 
 
 It can be installed via apt
@@ -26,7 +28,7 @@ Here's a preview of what it looks like
 
 ![s-tui preview](https://github.com/amanusk/s-tui/blob/master/ScreenShots/s-tui-1.0.gif?raw=true)
 
-## lm-sensors
+### lm-sensors
 First, install the lm-sensors package
 ```
 apt install lm-sensors
@@ -77,7 +79,7 @@ There is a way to edit the Proxmox dashboard's template and manually add html an
 - If you make a mistake when editing the template, such as a typo, you won't be able to access the dashboard
 - Any future update that changes the template will revert your changes
 
-## htop
+##1# htop
 Another way is to use good old `htop`.
 ```
 apt install htop
@@ -121,6 +123,36 @@ Here's an example output:
 
 ```
 
+## Optimisations
+
+### Change CPU governer
+CPU governors are part of the Linux kernel, they control the CPU frequency according to the needs of the applications. There are several profiles we can choose from, and since every CPU is slightly different, the available profiles might be different. For example, these profiles are available for my main PC:
+```
+conservative ondemand userspace powersave performance schedutil 
+```
+By default, `performance` is selected (at least for me), which means all cores will operate at their maximum allowed clock speeds all the time. As a result, my CPU pulls around 54W at idle.
+
+By changing the governor to `ondemand`, the idle clock speeds are reduced from 3.2GHz to 1.4GHz, and the CPU pulls 34W. With this governor, when I put on a heavy load such as gaming, the frequency goes up to the max value, and I don't feel a performance lost. This seems like a win-win, I don't know why it's not the default.
+
+To list available CPU governors for your system:
+```
+cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors
+```
+To see what the current CPU governors being used are:
+```
+cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+```
+To change CPU governors for all CPUs and CPU cores (will not persist)
+```
+echo "ondemand" | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+```
+To change CPU governors permanently, add the following:
+```
+nano /etc/default/cpufrequtils
+```
+```
+GOVERNOR="ondemand"
+```
 
 ## Good resources:
 - https://gist.github.com/tinwhisker/53d77c887535129021a1f58359930935
