@@ -405,4 +405,4 @@ Perhaps getting this card to work under XP in Proxmox is a futile endeavour afte
 - [VM Setup Guide](vm-setup-guide.md)
 - [SSD Protection](ssd-protection-proxmox.md)
 - [Mount existing disks from previous Proxmox installation](mount-existing-disks-to-storage.md)
-- [Temperature monitoring](temperature-monitoring.md)
+- [Temperature monitoring and optimisations](temperature-monitoring-optimisation.md)
