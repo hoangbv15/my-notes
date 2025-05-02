@@ -146,12 +146,12 @@ To change CPU governors for all CPUs and CPU cores (will not persist)
 ```
 echo "ondemand" | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
 ```
-To change CPU governors permanently, add the following:
+To change CPU governors permanently, append the following to te `GRUB_CMDLINE_LINUX_DEFAULT` line in grub
 ```
-nano /etc/default/cpufrequtils
+nano /etc/default/grub
 ```
 ```
-GOVERNOR="ondemand"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet intel_iommu=on iommu=pt cpufreq.default_governor=ondemand"
 ```
 
 ## Good resources:
