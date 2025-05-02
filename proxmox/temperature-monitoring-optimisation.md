@@ -153,6 +153,7 @@ nano /etc/default/grub
 ```
 GRUB_CMDLINE_LINUX_DEFAULT="quiet intel_iommu=on iommu=pt cpufreq.default_governor=ondemand"
 ```
+Then run `update-grub` to apply the change to the bootloader. The new governor will automatically activate upon reboot.
 
 ## Good resources:
 - https://gist.github.com/tinwhisker/53d77c887535129021a1f58359930935
