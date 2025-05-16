@@ -182,7 +182,7 @@ Note that I have `ext4` because that's the format I chose for the Proxmox drive,
 
 ## Disable apt daily service and timer
 
-I believe these services and timers are inherited from Debian, where there is a desktop environment and the user wants to see automated updates. For Proxmox, I always manually refresh and update using the web GUI, so this is unneeded.
+I believe these services and timers are inherited from Debian, where there is a desktop environment and the user wants to see automated updates. I have observed that these writes to disk every time shortly after booting, presumably for preemptive apt cache refreshing. For Proxmox, I always manually refresh and update using the web GUI, so this is unneeded.
 To disable them all:
 ```
 systemctl disable apt-daily.service
