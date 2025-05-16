@@ -179,3 +179,14 @@ By default, Linux (as well as MacOS) stores the access time for every file the O
 /dev/pve/root / ext4 errors=remount-ro,noatime 0 1
 ```
 Note that I have `ext4` because that's the format I chose for the Proxmox drive, yours might differ depending on what you chose.
+
+## Disable apt daily service and timer
+
+I believe these services and timers are inherited from Debian, where there is a desktop environment and the user wants to see automated updates. For Proxmox, I always manually refresh and update using the web GUI, so this is unneeded.
+To disable them all:
+```
+systemctl disable apt-daily.service
+systemctl disable apt-daily.timer
+systemctl disable apt-daily-upgrade.timer
+systemctl disable apt-daily-upgrade.service
+```
