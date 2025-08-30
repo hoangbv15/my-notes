@@ -200,7 +200,9 @@ Vulnerabilities:
   Srbds:                     Not affected
   Tsx async abort:           Vulnerable
 ```
-Which means it is working.
+Which means it is working. Note that L1tf says "Mitigation" still, but the PTE Inversion mitigation has no performance impact according to this source: https://www.kernel.org/doc/html/latest/admin-guide/hw-vuln/l1tf.html
+
+After disabling this, my Windows 11 VM's performance didn't change one bit, still as bad as before.
 
 #### Pass L3 cache into the VM
 When I view the CPU model using CPU-Z inside the VM running Windows 11, I see only 16MB of L3 cache, even though my CPU has 50MB. After some research, I found a way to make the VM more aware of this. It turns out that this is related to CPU topology, i.e. how the CPU is laid out internally. So the way to make this work is to add a few CPU arguments to QEMU.
