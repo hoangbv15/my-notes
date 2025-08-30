@@ -155,6 +155,171 @@ GRUB_CMDLINE_LINUX_DEFAULT="quiet intel_iommu=on iommu=pt cpufreq.default_govern
 ```
 Then run `update-grub` to apply the change to the bootloader. The new governor will automatically activate upon reboot.
 
+### Performance improvement (but hasn't worked)
+Even though CPU-Z synthetic benchmark shows that the single thread and multi thread scores of the Windows 11 VM is within 5% of baremetal, the difference in games is massive. For example, in CS2, I get around 85 fps in-game with bots on baremetal but only 35 fps in the VM, and in Jedi Survivor, 110 fps baremetal vs 55 fps VM.
+The below are the things I've tried so far that hasn't made a difference in performance.
+
+#### Turn off mitigations
+By default, Linux tries to mitigate vulnerabilities of the platform, such as mds and spectre. These mitigations slows down the system, so to get maximum performance, I'd need to disable them. If your system is so new that there are no vulnerabilities that needs mitigated, then you can skip this.
+
+First, check the current status with 
+```
+lscpu
+```
+And note the lines in the Vulnerabilities section that says "Mitigated".
+
+Modify grub with
+```
+nano /etc/default/grub
+```
+Then add "mitigations=off" to this line
+```
+GRUB_CMDLINE_LINUX_DEFAULT="quiet mitigations=off"
+```
+Rebuild grub with 
+```
+update-grub
+```
+After rebooting the whole system, use lscpu again to check if the system is now vulnerable. In my case, I see something like this:
+```
+Vulnerabilities:
+  Gather data sampling:      Not affected
+  Ghostwrite:                Not affected
+  Indirect target selection: Not affected
+  Itlb multihit:             KVM: Vulnerable
+  L1tf:                      Mitigation; PTE Inversion; VMX vulnerable, SMT disabled
+  Mds:                       Vulnerable; SMT disabled
+  Meltdown:                  Vulnerable
+  Mmio stale data:           Vulnerable
+  Reg file data sampling:    Not affected
+  Retbleed:                  Not affected
+  Spec rstack overflow:      Not affected
+  Spec store bypass:         Vulnerable
+  Spectre v1:                Vulnerable: __user pointer sanitization and usercopy barriers only; no swapgs barriers
+  Spectre v2:                Vulnerable; IBPB: disabled; STIBP: disabled; PBRSB-eIBRS: Not affected; BHI: Not affected
+  Srbds:                     Not affected
+  Tsx async abort:           Vulnerable
+```
+Which means it is working.
+
+#### Pass L3 cache into the VM
+When I view the CPU model using CPU-Z inside the VM running Windows 11, I see only 16MB of L3 cache, even though my CPU has 50MB. After some research, I found a way to make the VM more aware of this. It turns out that this is related to CPU topology, i.e. how the CPU is laid out internally. So the way to make this work is to add a few CPU arguments to QEMU.
+
+Unfortunately, Proxmox doesn't have the UI to add this, so we'll have to do it manually.
+
+First, grab the current set of QEMU arguments for the VM:
+```
+qm showcmd 105
+```
+where 105 is my VM's id. Substitute this number with your VM id.
+
+Copy the output into notepad or similar and look for the -cpu arguments. Mine look like this:
+```
+-cpu 'host,hv_ipi,hv_relaxed,hv_reset,hv_runtime,hv_spinlocks=0x1fff,hv_stimer,hv_synic,hv_time,hv_vapic,hv_vendor_id=proxmox,hv_vpindex,kvm=off,+kvm_pv_eoi,+kvm_pv_unhalt'
+```
+Take this and add ```host-cache-info=on,topoext=on,hv_vendor_id=GenuineIntel``` to this list. I use GenuineIntel as the hv_vendor_id since my CPU is Intel, but I'm not sure if this makes any difference. Then add it to the args section of the vm .conf file like this:
+```
+nano /etc/pve/qemu-server/105.conf
+```
+```
+args: -cpu 'host,host-cache-info=on,topoext=on,hv_ipi,hv_relaxed,hv_reset,hv_runtime,hv_spinlocks=0x1fff,hv_stimer,hv_synic,hv_time,hv_vapic,hv_vendor_id=proxmox,hv_vpindex,kvm=off,+kvm_pv_eoi,+kvm_pv_unhalt'
+```
+Reboot the VM and CPU-Z should now see 50MB of L3 cache.
+
+This works, however from my testing, it made no performance impact.
+
+#### CPU Pinning
+
+By default, the Proxmox CPU scheduler will dynamically assign work to CPU cores as it sees fit. We can override this behaviour and pin the VM's vCPU processes to particular physical CPU cores, using Linux's tools.
+
+It seems that the way to do this on Proxmox is using a hookscript.
+
+First, check the CPU topology in Proxmox terminal with
+```
+lscpu -e
+```
+In my case, the output is:
+```
+CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ    MINMHZ       MHZ
+  0    0      0    0 0:0:0:0          yes 3300.0000 1200.0000 1299.2390
+  1    0      0    1 1:1:1:0          yes 3300.0000 1200.0000 1199.3400
+  2    0      0    2 2:2:2:0          yes 3300.0000 1200.0000 1245.1010
+  3    0      0    3 3:3:3:0          yes 3300.0000 1200.0000 2498.5979
+  4    0      0    4 4:4:4:0          yes 3300.0000 1200.0000 1698.9690
+  5    0      0    5 8:8:8:0          yes 3300.0000 1200.0000 1860.8810
+  6    0      0    6 9:9:9:0          yes 3300.0000 1200.0000 1199.3409
+  7    0      0    7 10:10:10:0       yes 3300.0000 1200.0000 1499.2620
+  8    0      0    8 11:11:11:0       yes 3300.0000 1200.0000 1400.7240
+  9    0      0    9 12:12:12:0       yes 3300.0000 1200.0000 1299.2260
+ 10    0      0   10 16:16:16:0       yes 3300.0000 1200.0000 1264.3220
+ 11    0      0   11 17:17:17:0       yes 3300.0000 1200.0000 1214.4041
+ 12    0      0   12 18:18:18:0       yes 3300.0000 1200.0000 2498.6289
+ 13    0      0   13 19:19:19:0       yes 3300.0000 1200.0000 1308.2870
+ 14    0      0   14 20:20:20:0       yes 3300.0000 1200.0000 1210.5470
+ 15    0      0   15 24:24:24:0       yes 3300.0000 1200.0000 1199.3600
+ 16    0      0   16 25:25:25:0       yes 3300.0000 1200.0000 1200.0000
+ 17    0      0   17 26:26:26:0       yes 3300.0000 1200.0000 2498.6270
+ 18    0      0   18 27:27:27:0       yes 3300.0000 1200.0000 1216.0460
+ 19    0      0   19 28:28:28:0       yes 3300.0000 1200.0000 1200.0000
+```
+This shows that I have 20 Cores, numbered from 0 to 19, which all live under the same Node and Socket. Moreover, they all have their own L1d, L1i and L2 caches. This is because I disabled Hyperthreading in my motherboard BIOS. If HT was enabled, there would be 40 "cores" in groups of 2, each group sharing L1 and L2 caches.
+It is recommended to assign cores that share caches to the same VM to avoid random cache saturation due to spikes from another VM.
+
+First, create a script in /var/lib/vz
+```
+cd /var/lib/vz
+mkdir snippets
+ln -s /var/lib/vz/snippets ~/snippets
+cd ~/snippets
+nano cpu-pinning-0-15.sh
+```
+and put the following content in:
+```
+#!/bin/bash
+
+vmid="$1"
+phase="$2"
+
+cpuset="0-15"
+
+if [[ "$phase" == "post-start" ]]; then
+    main_pid="$(< /run/qemu-server/$vmid.pid)"
+    taskset --cpu-list  --all-tasks --pid "$cpuset" "$main_pid"
+fi
+```
+Make it executable
+```
+chmod +x cpu-pinning-0-15.sh
+```
+If this script runs, it will confine the VM vCPU processes to the cores we defined (0-15 in this example).
+
+To make this script execute automatically, we add a Hookscript section to our VM's conf file:
+```
+nano /etc/pve/qemu-server/105.conf
+```
+And add
+```
+hookscript: local:snippets/cpu-pinning-0-15.sh
+```
+Save, reboot VM, and it should now be pinned to those CPU cores.
+
+To make Proxmox's kernel processes avoid these CPU cores, we need to modify grub
+```
+nano /etc/default/grub
+```
+And add
+```
+GRUB_CMDLINE_LINUX="isolcpus=0-15"
+```
+Then rebuild grub with
+```
+update-grub
+```
+The isolcpus parameter will tell the Linux kernel to avoid the CPU cores specified.
+
+However, after having done this, not only that I saw no performance gains, but the isolcpus parameter makes the whole system slow to a crawl. Same thing even if I change it to 0-9 to give 10 cores to the Linux kernel and 10 cores to the VM. I'm not sure why.
+
 ## Good resources:
 - https://gist.github.com/tinwhisker/53d77c887535129021a1f58359930935
 - https://itsfoss.com/monitor-cpu-gpu-temp-linux/
+- https://docs.renderex.ae/posts/CPU-Pinning/
