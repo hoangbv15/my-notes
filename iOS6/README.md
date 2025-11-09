@@ -186,3 +186,68 @@ ln -s /dev/null /var/mobile/Documents/log/openvpn.log
 ```
 
 This script can either be downloaded to the device to be executed in MTerminal, or via SSH.
+
+## Whatsapp
+
+WhatsAppX (https://github.com/calvinknt/WhatsAppX) is an open source solution for running WhatsApp on iOS 6. 
+
+This solution has an iOS app, which connects to a server which has to be run on your computer. This server uses nodejs and uses `whatsapp-web.js` (https://wwebjs.dev/) as a WhatsApp client. This means the actual WhatsApp client runs on your computer, and the iOS app acts as a thin client.
+
+Notifications doesn't work since that requires the server to send requests to Apple Push servers, which costs $99 per year.
+
+### Security concern
+
+There are obviously huge security concerns. The traffic between this thin iOS client with the "server" is all in plain text. This means if you expose the server to the internet, anyone could connect to it and send/receive WhatsApp messages as you.
+
+Because of this, if you want to use this outside of your home wifi, self hosting a VPN is heavily recommended. In my case, I setup an OpenVPN server and use GuizmOVPN to connect to it.
+
+### Possibility
+
+If I have the time to read & understand the json schemas that the thin client expects, I can in theory rewrite the server to connect to anything, be it Signal, Delta Chat, or even SimpleX Chat
+
+## IRC
+
+Amazingly, the IRC app called LimeChat (which you can get on Veteris) still works. However SSL encryption no longer works, so you can only connect via plain text.
+
+Due to this, I only recommend using this with your self-hosted IRC server and with your selfhosted VPN.
+
+Here is a very easy to use docker for an IRC server: https://github.com/inspircd/docker
+
+## VPN
+
+I self-host SoftEther VPN (https://www.softether.org/) on the same machine that I host my IRC server and the WhatsAppX server. That way, I can connect my iPhone to those servers using local IP addresses, without having to expose them to the internet. The VPN server however needs to be exposed to the internet.
+
+I use this docker image for ease of setting up: https://hub.docker.com/r/siomiz/softethervpn/
+
+Here is the command I use:
+```
+docker run \
+--name softethervpn \
+--restart=always \
+-d --cap-add NET_ADMIN \
+-e PSK=Shared secret \
+-e USERS="user1:pass1;user2:pass2;user3:pass3" \
+-e SPW=password% \
+-e HPW=password% \
+-d --privileged \
+-p 500:500/udp \
+-p 4500:4500/udp \
+-p 1701:1701/tcp \
+-p 1194:1194/udp \
+-p 5555:5555/tcp \
+-v ./vpn_server.config:/usr/vpnserver/vpn_server.config \
+-v /Volumes/RamDisk/softether/server_log:/usr/vpnserver/server_log \
+-v /Volumes/RamDisk/softether/packet_log:/usr/vpnserver/packet_log \
+-v /Volumes/RamDisk/softether/security_log:/usr/vpnserver/security_log \
+siomiz/softethervpn
+```
+
+Where `/Volumes/Ramdisk` is a ram disk that I mount on boot. This means the server won't log to disk to reduce disk lifespan, and I can still read logs as long as the machine doesn't reboot.
+
+## Notifications
+
+There seems to be an open source implementation of push notifications, aimed at legacy iOS. However, the documentation is a bit scarce so it's not clear how exactly to use. I'll put the links here if this changes in the future.
+
+Client: https://github.com/ObscureMosquito/Skyglow-Notifications-Client
+
+Server: https://github.com/Preloading/SkyglowNotificationServer
