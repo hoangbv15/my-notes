@@ -244,6 +244,10 @@ siomiz/softethervpn
 
 Where `/Volumes/Ramdisk` is a ram disk that I mount on boot. This means the server won't log to disk to reduce disk lifespan, and I can still read logs as long as the machine doesn't reboot.
 
+SoftEther supports 2 protocols that works on iOS 6, L2TP/IPSec and OpenVPN. For those 2, you need to open ports 500, 4500 and 1194. In general OpenVPN is recommended due to it being more secure and faster, especially when the client GuizmOVPN works. Unfortunately no WireGuard support whatsoever.
+
+For exporting the OpenVPN profile, copy the terminal output of the above docker run command, put it in a file, and name it with the .ovpn extension.
+
 ## Notifications
 
 There seems to be an open source implementation of push notifications, aimed at legacy iOS. However, the documentation is a bit scarce so it's not clear how exactly to use. I'll put the links here if this changes in the future.
