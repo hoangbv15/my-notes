@@ -155,6 +155,7 @@ Apart from this, I also have:
 - Classic Youtube App
 - TubeRepair BETA (pointing Youtube apps to an Invidious instance of choice. Supports both the classic youtube app and Youtube 2.2.0)
 - EbayX2 (for fixing ebay 1.7.2)
+- NCSettings and 4 NCSettings
 
 ## Prevent NAND wear due to logging
 
