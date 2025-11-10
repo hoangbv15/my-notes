@@ -257,9 +257,22 @@ Client: https://github.com/ObscureMosquito/Skyglow-Notifications-Client
 
 Server: https://github.com/Preloading/SkyglowNotificationServer
 
-## ChatGPT
+## HTTPS Rest calls
 
 There is a modern ChatGPT client that works on iOS 6: https://github.com/bag-xml/ChatGPT-for-Legacy-iOS
 The significance of this is not ChatGPT itself, but the fact that we have code example of securely communicating with a REST backend over HTTPS.
 
 If I have the time to dissect this code, it would be very helpful when trying to create modern & secure iOS 6 client-server apps.
+
+## SSH
+
+If you've installed OpenSSH on the phone, you can use wired or wireless SSH to connect to the phone on a computer with SSH.
+But to actually do that, you need to specify the command with a special parameter like so:
+```
+ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa root@192.168.1.86
+```
+Otherwise, there's a chance the ssh command will fail with this error
+```
+Unable to negotiate with 192.168.1.86 port 22: no matching host key type found. Their offer: ssh-rsa,ssh-dss
+```
+For the SSH password, just use `alpine` as it is the default password for OpenSSH on iPhones.
