@@ -95,10 +95,20 @@ Since we're on iOS 7, there is an amazing exploit that allows us to use the iOS 
 
 As you may have already deduced, this downgrade method tricks the device into thinking that it is booting iOS 7, while instead booting into iOS 6. Because of that, when the device is booting, for the second at the beginning, the iOS 7 boot screen can be seen, before quickly being replaced by the iOS 6 boot screen.
 
-### Why iOS 6.1.2 but not 6.1.3 or 6.1.4
+### Why iOS 6.1.2 but not 6.1.3 or 6.1.4 / enabling LTE
 
 Because of this https://www.reddit.com/r/LegacyJailbreak/comments/1dl6gvx/guide_how_to_enable_lte_4g_on_any_iphone_5_on_ios/
 According to this post, iOS 6.1.3 and 6.1.4 didn't add much to 6.1.2, but it patched an exploit which previously allowed us to easily enable LTE.
+
+To enable LTE:
+- Install the Commcenter patch ! Without it, all modifications done below will not be applied.
+- With iFile, go to /private/var/mobile/Library/Carrier Bundle.bundle/ (which is a shortcut to your current Carrier Bundle)
+- Open the file carrier.plist with the Properties reader
+- Click on the « + » button and add a boolean key called « Show4GSwitch » then validate. Then, enable this boolean key !
+- Erase the folder called "overlay" that is located in /var/mobile/Library/Carrier Bundles/
+- Respring. Now you need to check if the 3G switch has been correctly replaced by the LTE switch.
+
+This really enables LTE in all the iPhone 5's I have tested under iOS 6.1.2. Keep in mind since I'm based in the UK, my iPhone 5's are all A1269 iPhone5,2 global versions with more LTE bands than other models.
 
 ## Save activation tickets
 
