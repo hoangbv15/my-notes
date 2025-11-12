@@ -123,17 +123,19 @@ Now comes the easy & fun part, installing tweaks. This will be personal, so I'll
 Here are the repos that I use:
 
 ```
-http://cydia.aoiblog.jp/ 
-http://yzu.moe/dev/ 
-http://cydia.invoxiplaygames.uk/beta/ 
-http://cydia.bag-xml.com/ 
-http://cydia.invoxiplaygames.uk/ 
-http://cydia.skyglow.es/ 
-http://cydia.preloading.dev/ 
-http://beta.leimobile.com/repo/ 
-http://cydia.nekokawa.net/ 
-http://repo.legacyios.com/ 
+deb http://cydia.aoiblog.jp/ ./
+deb http://yzu.moe/dev/ ./
+deb http://cydia.invoxiplaygames.uk/beta/ ./
+deb http://cydia.bag-xml.com/ ./
+deb http://cydia.invoxiplaygames.uk/ ./
+deb http://cydia.skyglow.es/ ./
+deb http://cydia.preloading.dev/ ./
+deb http://beta.leimobile.com/repo/ ./
+deb http://cydia.nekokawa.net/ ./
+deb http://repo.legacyios.com/ ./
+deb http://cydia.invoxiplaygames.uk/cydate/ ./
 ```
+To quickly add these sources to Cydia, put the above text in a file named AnythingYouWant.list in /etc/apt/sources.list.d on the device. Use iFile or SSH to achieve this. It can be tricky because you need first to install iFile or OpenSSH, but you can use OpenBackup to backup all the .deb files to install them later. Also, if you use the LIK script to downgrade to iOS 6, OpenSSH will be installed out of the box.
 
 The most important tweaks:
 - Activator (for double tapping status bar to lock)
