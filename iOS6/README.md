@@ -194,7 +194,8 @@ rm /var/logs/AppleSupport/general.log
 ln -s /dev/null /var/logs/AppleSupport/general.log
 
 # if GuizmOVPN is installed
-rm /var/mobile/Documents/log/openvpn.log
+mkdir -p /var/mobile/Documents/log
+rm -f -- /var/mobile/Documents/log/openvpn.log
 ln -s /dev/null /var/mobile/Documents/log/openvpn.log
 ```
 
