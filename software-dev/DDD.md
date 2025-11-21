@@ -114,9 +114,11 @@ _So create and enforce a Ubiquitous Language, get everyone to use it in the cont
 
 Alongside the Ubiquitous language, we need to identify the **Domain Experts**. These are people who serve as the sources of truth for everything related to the Domain, because they truly know it best.
 
-To identify them, look for where the feature requests of our software came from. This might be the Product Owners if we have them in the team, or just a developer from another team who's making requests to our team. It's anyone who owns the idea, the concept of what they want our team to build.
+To identify them, look for where the feature requests of our software came from. This might be the Product Owners if we have them in the team, or just a developer from another team who's making requests to our team. It can also be ourselves, although rarely. It's anyone who owns the idea, the concept of what they want our team to build.
 
 Once we've identified them, we should talk to them as much as we can, because they are the key to understanding the Domain. Talk to them when they make a request, when we've made some progress, when we have a demo, when there are some hiccups, or when we simply want to deepen our understanding.
+
+But don't treat what they say as gosper, especially when they are non-technical. There will be gaps in our communication with them. They might not know clearly what they want, we might misunderstand them, etc. Our role is to help both of us reach a better understanding. There is no magic bullet, this can only be achieved with dedication and lots of hard work.
 
 The blue book really emphasizes on the importance of this. How breakthroughs in understanding of the Domain through communication with the Domain Experts and through deep thinking, lead to fundamental and positive changes in the software.
 
@@ -175,7 +177,7 @@ In DDD, there are several tools to help us with building this. They consist of *
 
 #### Entities, Value Objects and Aggregates
 
-**Entities are mutable objects with an identity**. Entities are mutable except for their ID. An example is User, where each instance of it corresponds to a real User of the App. In real life, each person can be identified by their social security number, and each User instance can be identified by, for instance, its UUID.
+**Entities are mutable objects with an identity**. Entities are mutable except for their ID. An example is User, where each instance of it corresponds to a real User of the App. In real life, each person can be identified by their social security number. In the same manner, our Domain Expert might want each User to be identified by, for instance, its UUID. This is therefore reflected in our model.
 
 ```mermaid
 classDiagram
@@ -191,7 +193,7 @@ classDiagram
   }
 ```
 
-Entities need to have their integrity ensured at all times, a bit like an ACID database. Operations on Entities should be transactional, atomic with logic to ensure that no inconsistencies can rise. Because of this, Entities are inherently complex and not everything should be entities.
+Entities need to have their integrity ensured at all times. Operations on Entities should always ensure that no inconsistencies can rise. Because of this, Entities are inherently complex and not everything should be entities.
 
 What determines that an Entity is consistent? The Domain's **business rules**.
 
@@ -206,9 +208,9 @@ classDiagram
   }
 ```
 
-Another way to think of Entities vs Value Objects is to imagine implementing an equal comparison. For Entities, we compare their IDs, whereas for Value Objects, we compare the attributes.
+Another way to think of Entities vs Value Objects is to imagine implementing an equal comparison. We don't have to do this, but if we did, for Entities we would compare their IDs, whereas for Value Objects, we'd compare the attributes.
 
-Value Objects also may contain business rules, but they are immutable and vastly simpler.
+Value Objects also may contain business rules, but they should be vastly simpler.
 
 Something can be a Value Object within a context, but an Entity in another context. It depends on whether or not the identity of that object is important for that context. This is called a _Bounded Context_, which I will describe later.
 
@@ -270,9 +272,13 @@ classDiagram
   External --> User: Query orders
 ```
 
+In the end, these are tools to help us distill the knowledge into code. They are helpful because they explicitly encode the rules that usually show up in many Domains, such as identity and immutability. 
+
+But I believe that tools are still tools, and we are not forced to use them to create a successfully Domain Model, as long as our model truly reflects the Domain knowledge.
+
 ### The Domain Service
 
-
+Sometimes, there are logic that doesn't fit inside the Domain Model. 
 
 ## Model Integrity
 
