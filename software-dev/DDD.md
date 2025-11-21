@@ -124,7 +124,6 @@ The blue book really emphasizes on the importance of this. How breakthroughs in 
 
 What we understand about the Domain in the beginning will never be perfect. Not only that, but the Domain itself evolves, it changes and moves forward. Or at least the Domain Experts' knowledge of it.
 
-
 ```mermaid
 flowchart LR
   S1("Review awkward areas in the model")
@@ -157,19 +156,55 @@ To do that, I believe that there are 3 main components in a DDD architecture.
 
 ### The Domain Model
 
-The concepts and business rules of the Domain is distilled into a **Domain Model**. You can think of this like a relational database schema, but way more abstract.
+The concepts and business rules of the Domain is distilled into a **Domain Model**. It is almost similar to a relational database schema, but way more abstract, with business logic inside them. Imagine full-fledged abstractions of real life Domain objects with their behaviour (a.k.a. business logic) encoded within.
 
-In DDD, the Model consists of **Entities**, **Value Objects** and **Aggregates**. Together, this forms the **Domain Model**.
+DDD asks that we must always ensure consistency and protect the integrity of the Domain Model. That means ensuring that all the business logic are properly encoded.
+
+For example, from speaking to the Domain Experts, we learned several rules the User Management context:
+
+- Each User should be unique and identifiable. There can't be duplicate Users.
+- Each User should have at least 1 or more Addresses assigned.
+- Each User can have 0 or more Orders assigned.
+- Addresses and Orders are for display purposes only, they don't have to be unique and identifiable.
+
+Note that these rules apply only to the User Management context. They will be different in another context, such as the Order Shipment context.
+
+So in our Domain Mode for the User Management system, the User, Address and Order classes should have logic to satisfy all of the above rules.
+
+In DDD, there are several tools to help us with building this. They consist of **Entities**, **Value Objects** and **Aggregates**.
 
 #### Entities, Value Objects and Aggregates
 
-**Entities are mutable objects with an identity**. Entities are mutable except for their ID. An example is User, where each instance of it corresponds to a real User of the App. In real life, each person can be identified by their social security number, and each User instance can be identified by, for instance, its UUID. The main idea is that there shouldn't be 2 instances of the same User at the same time. 
+**Entities are mutable objects with an identity**. Entities are mutable except for their ID. An example is User, where each instance of it corresponds to a real User of the App. In real life, each person can be identified by their social security number, and each User instance can be identified by, for instance, its UUID.
+
+```mermaid
+classDiagram
+  class User {
+    Id : UUID
+    Name : Name
+    Addresses : List~Address~
+    Orders : List~Order~
+    static CreateUser(Name, Address) User // generates new Id automatically
+    AddAddress(Address)
+    AddOrder(Order)
+    Equals(User) bool // Compares Ids
+  }
+```
 
 Entities need to have their integrity ensured at all times, a bit like an ACID database. Operations on Entities should be transactional, atomic with logic to ensure that no inconsistencies can rise. Because of this, Entities are inherently complex and not everything should be entities.
 
 What determines that an Entity is consistent? The Domain's **business rules**.
 
 **Value Objects are immutable objects without an identity**. An example is User's Name. There is nothing special about a Name, it is only so that the software knows what to put in the User's invoices. In fact, 2 Users can even share the same Name instance. Changing the Name of one User will not affect the other, due to Name being immutable and we just replace the whole instance. Value Objects are inherently much simpler than Entities. 
+
+```mermaid
+classDiagram
+  class Name {
+    Value : string
+    static CreateName(string) Name
+    Equals(Name) bool // Compares Values
+  }
+```
 
 Another way to think of Entities vs Value Objects is to imagine implementing an equal comparison. For Entities, we compare their IDs, whereas for Value Objects, we compare the attributes.
 
@@ -209,6 +244,8 @@ For example, the User's Address is a Value Object in the context of the User Man
 **Aggregates are groups of related Entities and Value Objects**. Since these objects are related to each other, they naturally falls in a hierarchy, and the top should always be an Entity.
 
 An Aggregate can be thought of as a big & complex Entity. There's the usual suspects of being an Entity, any operation done to it must ensure its internal consistency, a.k.a. the business rules. This is why an aggregate should only be accessed through the top level Entity. Bypassing this would potentially bypass important internal logic.
+
+Also, an Aggregate can be contained inside another Aggregate.
 
 ```mermaid
 ---
