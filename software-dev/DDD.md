@@ -158,6 +158,8 @@ To do that, I believe that there are 3 main components in a DDD architecture.
 
 ### The Domain Model
 
+Whenever I start designing for a new project using DDD, this is the first thing I'd sketch up. It is the most important thing in DDD.
+
 The concepts and business rules of the Domain is distilled into a **Domain Model**. It is almost similar to a relational database schema, but way more abstract, with business logic inside them. Imagine full-fledged abstractions of real life Domain objects with their behaviour (a.k.a. business logic) encoded within.
 
 DDD asks that we must always ensure consistency and protect the integrity of the Domain Model. That means ensuring that all the business logic are properly encoded.
@@ -276,9 +278,50 @@ In the end, these are tools to help us distill the knowledge into code. They are
 
 But I believe that tools are still tools, and we are not forced to use them to create a successfully Domain Model, as long as our model truly reflects the Domain knowledge.
 
+OK, now that we've covered the most important topic which is the Domain Model, let's look at the stuff surrounding the Domain Model, supporting its function.
+
 ### The Domain Service
 
-Sometimes, there are logic that doesn't fit inside the Domain Model. 
+So far we've had things that have attributes, like real life objects. They are stateful. Very frequently, there will be logic that won't directly need to know these states. In such cases, we put it in a Domain Service. 
+
+For example, the Order Shipment system might need the capability of calculating the cost of shipping an Order to an Address. This logic might internally calculate the dimensions (size and weight) of the shipment, the length of the journey, and ask an external system for the cost of making such a journey.
+
+```mermaid
+---
+  config:
+    class:
+      hideEmptyMembersBox: true
+---
+classDiagram
+  namespace OrderDomain {
+    class Service["OrderShipmentService"] {
+      CalculateShippingCost(Address, Order) Cost
+    }
+    class Address["Address<br/>[E]"]
+    class Order["Order<br/>[E]"]
+    class Cost["Cost<br/>[VO]"]
+  }
+  class Logistics["LogisticsProvider<br/>[External System]"] {
+    CalculateJourneyCost(Dimensions, Weight, LengthOfJourney) Price
+  }
+
+  Service --> Address
+  Service --> Order
+  Service --> Logistics
+  Service --> Cost
+```
+The OrderShipmentService takes in some Domain inputs and gives an output, there is no state. This is how a Domain Service should be. 
+
+_A Domain Service should contain logic related to the Domain, and be stateless._
+
+If you find yourself with a stateful Service, maybe it's time to think deeply and identify a missing concept in your Domain Model, perhaps a missing Entity. 
+
+In the above example, our Domain Service interacts directly with an external system, so there's a chance it has to deal with foreign concepts, such as Dimensions or Price, which may exist in our Domain Model in different forms. In such cases, there is a need for Adapters. 
+
+If the external systems are stable, well designed and well documented, it is usually not an issue. Sometimes, it is an issue, such as when integrating with a legacy system. In such cases, we might need an **Anti-Corruption Layer**.
+
+### The Anti-Corruption Layer
+
 
 ## Model Integrity
 
