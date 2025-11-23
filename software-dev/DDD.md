@@ -18,11 +18,11 @@ This "_what it is meant to do_", "_business requirements_", "_vision_", or as kn
 
 There's a hierarchical structure to this. We have top-level domains, from which you can extract smaller subdomains. 
 
-From my experience in the corporate world, the top-level domains are the top-level business areas surrounding the software. As a purely theoretical example, if we are making a shopping app, then the Domains might be Customer Management, Inventory, Payments. Within Customer Management, we might have Customer Data, Privacy, Customer Support as subdomains, and so on.
+From my experience in the corporate world, the top-level domains are the top-level business areas surrounding the software. As a purely theoretical example, if we are making a shopping app, then the Domains might be Customer, Inventory, Payments. Within User, we might have Customer Data, Privacy, Customer Support as subdomains, and so on.
 
 ```mermaid
 kanban
-  [Customer Management]
+  [Customer]
     [Customer Data]
     [Privacy]
     [Customer Support]
@@ -89,7 +89,7 @@ Not only this is a lot of wasteful object creations, it creates huge frictions w
 ```mermaid
 flowchart TD
   S("Some higher level code")
-  U("User")
+  U("Customer")
   P1("Package 1")
   P2("Package 2")
   P3("Package 3")
@@ -108,9 +108,11 @@ The way I've dealt with this is to create a **Glossary document** for the Domain
 | Term | Definition |
 |---|---|
 | App | The software that our team ABC is building for the purpose of XYZ |
-| User | The end user, customer, client of the App |
+| Customer | The end user, customer, client of the App |
 
 _So create and enforce a Ubiquitous Language, get everyone to use it in the context of the Domain._
+
+The _context_ that I'm speaking of here is another important concept which we will tackle later.
 
 ### Domain Experts
 
@@ -146,7 +148,7 @@ Perhaps you have heard about techniques or ceremonies to extract Domain knowledg
 
 I would like to stress again, that communication is key. Techniques such as Event Storming may bring structure to your meetings, but they are not a requirement. Do not put too much weight on them and be flexible. 
 
-As long as we gain knowledge, it does not matter much which technique we use.
+As long as we gain knowledge, it does not matter much which technique we use. 
 
 ## The DDD architecture
 
@@ -166,34 +168,34 @@ The concepts and business rules of the Domain is distilled into a **Domain Model
 
 DDD asks that we must always ensure consistency and protect the integrity of the Domain Model. That means ensuring that all the business logic are properly encoded.
 
-For example, from speaking to the Domain Experts, we learned several rules the User Management context:
+For example, from speaking to the Domain Experts, we learned several rules the Customer Data context:
 
-- Each User should be unique and identifiable. There can't be duplicate Users.
-- Each User should have at least 1 or more Addresses assigned.
-- Each User can have 0 or more Orders assigned.
+- Each Customer should be unique and identifiable. There can't be duplicate Customers.
+- Each Customer should have at least 1 or more Addresses assigned.
+- Each Customer can have 0 or more Orders assigned.
 - Addresses and Orders are for display purposes only, they don't have to be unique and identifiable.
 
-Note that these rules apply only to the User Management context. They will be different in another context, such as the Order Shipment context, where we don't care about Users as much as Addresses and Orders.
+Note that these rules apply only to the Customer Management context. They will be different in another context, such as the Order Shipment context, where we don't care about Customers as much as Addresses and Orders.
 
-So in our Domain Mode for the User Management system, the User, Address and Order classes should have logic to satisfy all of the above rules.
+So in our Domain Mode for the Customer Management system, the Customer, Address and Order classes should have logic to satisfy all of the above rules.
 
 In DDD, there are several tools to help us with building this. They consist of **Entities**, **Value Objects** and **Aggregates**.
 
 #### Entities, Value Objects and Aggregates
 
-**Entities are mutable objects with an identity**. Entities are mutable except for their ID. An example is User, where each instance of it corresponds to a real User of the App. In real life, each person can be identified by their social security number. In the same manner, our Domain Expert might want each User to be identified by, for instance, its UUID. This is therefore reflected in our model.
+**Entities are mutable objects with an identity**. Entities are mutable except for their ID. An example is Customer, where each instance of it corresponds to a real Customer of the App. In real life, each person can be identified by their social security number. In the same manner, our Domain Expert might want each Customer to be identified by, for instance, its UUID. This is therefore reflected in our model.
 
 ```mermaid
 classDiagram
-  class User {
+  class Customer {
     Id : UUID
     Name : Name
     Addresses : List~Address~
     Orders : List~Order~
-    static CreateUser(Name, Address) User // generates new Id automatically
+    static CreateCustomer(Name, Address) Customer // generates new Id automatically
     AddAddress(Address)
     AddOrder(Order)
-    Equals(User) bool // Compares Ids
+    Equals(Customer) bool // Compares Ids
   }
 ```
 
@@ -201,7 +203,7 @@ Entities need to have their integrity ensured at all times. Operations on Entiti
 
 What determines that an Entity is consistent? The Domain's **business rules**.
 
-**Value Objects are immutable objects without an identity**. An example is User's Name. There is nothing special about a Name, it is only so that the software knows what to put in the User's invoices. In fact, 2 Users can even share the same Name instance. Changing the Name of one User will not affect the other, due to Name being immutable and we just replace the whole instance. Value Objects are inherently much simpler than Entities. 
+**Value Objects are immutable objects without an identity**. An example is Customer's Name. There is nothing special about a Name, it is only so that the software knows what to put in the Customer's invoices. In fact, 2 Customers can even share the same Name instance. Changing the Name of one Customer will not affect the other, due to Name being immutable and we just replace the whole instance. Value Objects are inherently much simpler than Entities. 
 
 ```mermaid
 classDiagram
@@ -216,7 +218,7 @@ Another way to think of Entities vs Value Objects is to imagine implementing an 
 
 Value Objects also may contain business rules, but they should be vastly simpler.
 
-> Now you might think, why the need of a whole object here, just to encapsulate a string? We can't just use strings directly? There are benefits of using Value Objects even for simple attributes such as Name:
+> Now you might think, since Name has no business logic, why the need of a whole object here? We can't just use strings directly? There are benefits of using Value Objects even for simple attributes such as Name:
 > - No ambiguity when reading code, as the type is spelled out instead of being just a generic type.
 > - If in the future we need to change or add a new attribute to the Value Object, it's done in 1 place.
 > - In languages such as C# .NET, you can use structs for Value Objects, so that they are initialised in stack instead of heap memory, removing the garbage collection penalty. 
@@ -227,7 +229,7 @@ Something can be a Value Object within a context, but an Entity in another conte
 
 <table>
 <tr>
-<th> User Management System </th>
+<th> Customer Management System </th>
 <th> Order Management System </th>
 </tr>
 <tr>
@@ -235,7 +237,7 @@ Something can be a Value Object within a context, but an Entity in another conte
 
 ```mermaid
 flowchart LR
-  U("User<br/>[E]")
+  U("Customer<br/>[E]")
   A1("Address<br/>[VO]")
   U --> A1
 ```
@@ -252,7 +254,7 @@ flowchart LR
 </tr>
 </table>
 
-For example, the User's Address is a Value Object in the context of the User Management system. However, for an Order Shipment system, the Address might be an Entity, since it is important to the shipment of the order.
+For example, the Customer's Address is a Value Object in the context of the Customer Management system. However, for an Order Shipment system, the Address might be an Entity, since it is important to the shipment of the order.
 
 **Aggregates are groups of related Entities and Value Objects**. Since these objects are related to each other, they naturally falls in a hierarchy, and the top should always be an Entity.
 
@@ -267,20 +269,20 @@ Also, an Aggregate can be contained inside another Aggregate.
       hideEmptyMembersBox: true
 ---
 classDiagram
-  namespace UserAggregate {
-    class User["User<br/>[E]"]
+  namespace CustomerAggregate {
+    class Customer["Customer<br/>[E]"]
     class Name["Name<br/>[VO]"]
     class Address["Address<br/>[VO]"]
     class Order["Order<br/>[E]"]
   }
-  User o-- Name
-  User o-- "1..*" Address
-  User o-- "0..*" Order
+  Customer o-- Name
+  Customer o-- "1..*" Address
+  Customer o-- "0..*" Order
   Order o-- Address
 
   class External["External system"]
   direction LR
-  External --> User: Query orders
+  External --> Customer: Query orders
 ```
 
 In the end, these are tools to help us distill the knowledge into code. They are helpful because they explicitly encode the rules that usually show up in many Domains, such as identity and immutability. 
@@ -380,14 +382,68 @@ classDiagram
 ```
 In the example above, Price, Dimensions, Weight and Journey will be stopped at the Anti-Corruption Layer and will not appear in our Domain Service. 
 
-By the way, this is taking a page out of [Hexagonal Architecture](https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)) for loosely coupled components.
+> By the way, this is taking a page out of [Hexagonal Architecture](https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)) for loosely coupled components.
 
 This obviously comes at a cost of complexity. Maintaining a set of adapters can be tedious work. It can be lessen somewhat with AI nowadays, but there is still the risk of something breaking. We should use this only when necessary, such as when integration with a legacy system is an absolute must.
 
-With that, we have described all the most important parts of a DDD architecture. There are some more tools that the blue book wants us to know, such as Factories and Repositories. In my humble opinion, they are supplemental rather than necessities.
+### The Bounded Context
 
-## Model Integrity
+After all of that technical architectural stuff, we are back to conceptual thinking again.
 
-### Bounded Context
+When we communicate in life, there's always a context to everything. Knowing what the context is can totally change the meaning of phrases or even words.
 
-As the name suggest, a Bounded Context is an abstract boundary which contains a bunch of Domains related to each other. 
+> The word "season" can be used to describe the weather patterns, but in another context, it becomes the action of spicing up your food!
+
+**A Bounded Context is a defined abstract boundary which groups together a bunch of Domain Models related to each other, where the same Ubiquitous Language applies**. 
+
+Outside of that Bounded Context, we are in another Bounded Context where other Domain Models apply, with a different Ubiquitous Language.
+
+It's important to always be aware of the Bounded Context during communication, and make things consistent. At the same time, we should not be distracted by things going on in other Bounded Contexts.
+
+So how do we draw up a Bounded Context? Do we just have a Bounded Context around each Domain? Doesn't it sound like the same thing as a Domain if it's just a 1-1 mapping?
+
+Well, that's one way to do it. In the example below, we do just that, have a Bounded Context for Customer Data Domain and one for the Order Shipment Domain.
+
+```mermaid
+flowchart TD
+  subgraph cs["Customer Data Context"]
+    Customer
+    Name
+    Order
+    Address
+  end
+
+  subgraph os["Order Shipment Context"]
+    Cost
+    OS_Order[Order]
+    OS_Address[Address]
+  end
+
+  Address === OS_Address
+  Order === OS_Order
+
+  classDef context fill:#fff,stroke:#000,stroke-width:2px,stroke-dasharray: 5 5
+
+  class cs context
+  class os context
+```
+We might find out that there are Entities and Value Objects that appear in both Contexts, Order and Address in this case. To address this, we might choose one of the below:
+
+- Use adapters. Insert an Anti-Corruption Layer in between.
+- Declare that Order and Address are indeed sharing the same meaning between the two Contexts, and put them in a **Shared Kernel**, i.e. a shared federated library.
+- Declare that the Customer Context has the power to control Order and Address, and the Order Shipment Context must conform. This is called the **Conformist** approach.
+- Declare that the Customer and the Order Shipment Contexts should no longer have anything to do with each other, and split out totally, each going its **Separate Ways** (the name of this approach). This means each Context will find its own solution to fill in the gaps created by the separation.
+
+As you can see, when we make decisions like these, we are reshaping the Bounded Contexts as well as the Domain Models. Which ties into my prior statement that DDD is an iterative process.
+
+I would say that Bounded Contexts are usually not a 1-1 mapping of Domains, due to all the intricacies described above. It must keep all the relevant Models together, and the ability to draw up the boundaries comes with experience and business knowledge. 
+
+As devs and architects, I don't think we need to know too much about how to draw up the Bounded Contexts. That's again the job of the very senior person who knows a lot about the business. The important thing is to always be aware of the drawn up Contexts as we go along.
+
+### That's most of it, really!
+
+With that, we have described all the most important parts of a DDD architecture. 
+
+There are some more tools that the blue book wants us to know, such as Factories and Repositories. Factories are in charge of creating the Entities and Value Objects, and Repositories abstract away the storage and retrieval of them.
+
+In my humble opinion, they are supplemental rather than necessities. They don't add much value for instilling the Domain Model with business rules. So I would apply KISS here and use them only if necessary.
