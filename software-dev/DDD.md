@@ -301,8 +301,8 @@ classDiagram
     class Order["Order<br/>[E]"]
     class Cost["Cost<br/>[VO]"]
   }
-  class Logistics["LogisticsProvider<br/>[External System]"] {
-    CalculateJourneyCost(Dimensions, Weight, LengthOfJourney) Price
+  class Logistics["ExternalLogisticsService<br/>[External System]"] {
+    CalculateJourneyCost(Dimensions, Weight, Journey) Price
   }
 
   Service --> Address
@@ -322,6 +322,60 @@ If the external systems are stable, well designed and well documented, it is usu
 
 ### The Anti-Corruption Layer
 
+This is an optional layer that protects the Domain from being polluted with unwanted things from an external system, hence "anti-corruption". It sits between the external system and our Domain Model, and adapts all requests, inputs and outputs between the two, using a set of Providers and Adapters.
+
+```mermaid
+---
+  config:
+    class:
+      hideEmptyMembersBox: true
+---
+classDiagram
+  direction TB
+  namespace OrderDomain {
+    class Service["OrderShipmentService"] {
+      CalculateShippingCost(Address, Order) Cost
+    }
+    class Address["Address<br/>[E]"]
+    class Order["Order<br/>[E]"]
+    class Cost["Cost<br/>[VO]"]
+  }
+  namespace AntiCorruptionLayer {
+    class LogisticsProvider {
+      CalculateJourneyCost(Address, Order) Cost
+    }
+    class Adapters["Set of Adapters"]
+  }
+  LogisticsProvider --> Adapters
+
+  namespace ExternalSystem {
+    class Logistics["ExternalLogisticsService"] {
+      CalculateJourneyCost(Dimensions, Weight, Journey) Price
+    }
+    class Price
+    class Dimensions
+    class Weight
+    class Journey
+  }
+  Logistics --> Price
+  Logistics --> Dimensions
+  Logistics --> Weight
+  Logistics --> Journey
+
+  Service --> Address
+  Service --> Order
+  Service --> Cost
+
+  Service <--> LogisticsProvider : we can keep using our Ubiquitous Language
+  LogisticsProvider <--> Logistics
+```
+In the example above, Price, Dimensions, Weight and Journey will be stopped at the Anti-Corruption Layer and will not appear in our Domain Service. 
+
+By the way, this is taking a page out of [Hexagonal Architecture](https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)) for loosely coupled components.
+
+This obviously comes at a cost of complexity. Maintaining a set of adapters can be tedious work. It can be lessen somewhat with AI nowadays, but there is still the risk of something breaking. We should use this only when necessary, such as when integration with a legacy system is an absolute must.
+
+With that, we have described all the most important parts of a DDD architecture. There are some more tools that the blue book wants us to know, such as Factories and Repositories. In my humble opinion, they are supplemental rather than necessities.
 
 ## Model Integrity
 
