@@ -61,7 +61,7 @@ In life, it is difficult for 2 people to communicate well if they speak differen
 
 ```mermaid
 flowchart TD
-  Y("You")
+  S("Some higher level code")
   P1("Package 1")
   P2("Package 2")
   P3("Package 3")
@@ -70,10 +70,10 @@ flowchart TD
   P2 --> Customer
   P3 --> Client
 
-  Y --> P1
-  Y --> P2
-  Y --> P3
-  Y --> A
+  S --> P1
+  S --> P2
+  S --> P3
+  S --> A
   
   A --> User
   A --> Customer
@@ -82,11 +82,13 @@ flowchart TD
 
 It may seem harmless at first, but consider this scenario where you need to read source code to understand what it is trying to achieve. In one package, you see the User class, so you look for its use in the rest of the code, but you couldn't find much. Turns out, it is called Customer in another package, and Client in another. You discovered this only after finding the adapters that convert objects of these types. 
 
+And this is all internal code within the same department!
+
 Not only this is a lot of wasteful object creations, it creates huge frictions when the code is used as a communication tool. It is a lot more efficient if the same concept is represented by a single class instead of 3 different classes.
 
 ```mermaid
 flowchart TD
-  Y("You")
+  S("Some higher level code")
   U("User")
   P1("Package 1")
   P2("Package 2")
@@ -96,9 +98,9 @@ flowchart TD
   P2 --> U
   P3 --> U
 
-  Y --> P1
-  Y --> P2
-  Y --> P3
+  S --> P1
+  S --> P2
+  S --> P3
 ```
 
 The way I've dealt with this is to create a **Glossary document** for the Domain, point all related design documents to it, and ask everyone to use it consistently.
