@@ -120,7 +120,7 @@ To identify them, look for where the feature requests of our software came from.
 
 Once we've identified them, we should talk to them as much as we can, because they are the key to understanding the Domain. Talk to them when they make a request, when we've made some progress, when we have a demo, when there are some hiccups, or when we simply want to deepen our understanding.
 
-But don't treat what they say as gosper, especially when they are non-technical. There will be gaps in our communication with them. They might not know clearly what they want, we might misunderstand them, etc. Our role is to help both of us reach a better understanding. There is no magic bullet, this can only be achieved with dedication and lots of hard work.
+**But don't treat what they say as gosper, especially when they are non-technical**. There will be gaps in our communication with them. They might not know clearly what they want, we might misunderstand them, etc. Our role is to help sides reach a common, better understanding. There is no magic bullet, this can only be achieved with dedication and lots of hard work.
 
 The blue book really emphasizes on the importance of this. How breakthroughs in understanding of the Domain through communication with the Domain Experts and through deep thinking, lead to fundamental and positive changes in the software.
 
