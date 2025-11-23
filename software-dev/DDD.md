@@ -144,7 +144,7 @@ Like agile development, we start with something rough, then iteratively refine o
 
 Perhaps you have heard about techniques or ceremonies to extract Domain knowledge, such as Event Storming. 
 
-I would like to stress again, that communication is key. Techniques such as Event Storming may work for some, but not others, so do not put too much weight on them and be flexible. 
+I would like to stress again, that communication is key. Techniques such as Event Storming may bring structure to your meetings, but they are not a requirement. Do not put too much weight on them and be flexible. 
 
 As long as we gain knowledge, it does not matter much which technique we use.
 
@@ -162,7 +162,7 @@ To do that, I believe that there are 3 main components in a DDD architecture.
 
 Whenever I start designing for a new project using DDD, this is the first thing I'd sketch up. It is the most important thing in DDD.
 
-The concepts and business rules of the Domain is distilled into a **Domain Model**. It is almost similar to a relational database schema, but way more abstract, with business logic inside them. Imagine full-fledged abstractions of real life Domain objects with their behaviour (a.k.a. business logic) encoded within.
+The concepts and business rules of the Domain is distilled into a **Domain Model**. It is almost similar to a relational database schema, but way more abstract, with business logic inside them. **They are full-fledged abstractions of real life Domain objects with their behaviour (a.k.a. business logic) encoded within.**
 
 DDD asks that we must always ensure consistency and protect the integrity of the Domain Model. That means ensuring that all the business logic are properly encoded.
 
@@ -173,7 +173,7 @@ For example, from speaking to the Domain Experts, we learned several rules the U
 - Each User can have 0 or more Orders assigned.
 - Addresses and Orders are for display purposes only, they don't have to be unique and identifiable.
 
-Note that these rules apply only to the User Management context. They will be different in another context, such as the Order Shipment context.
+Note that these rules apply only to the User Management context. They will be different in another context, such as the Order Shipment context, where we don't care about Users as much as Addresses and Orders.
 
 So in our Domain Mode for the User Management system, the User, Address and Order classes should have logic to satisfy all of the above rules.
 
@@ -215,6 +215,13 @@ classDiagram
 Another way to think of Entities vs Value Objects is to imagine implementing an equal comparison. We don't have to do this, but if we did, for Entities we would compare their IDs, whereas for Value Objects, we'd compare the attributes.
 
 Value Objects also may contain business rules, but they should be vastly simpler.
+
+> Now you might think, why the need of a whole object here, just to encapsulate a string? We can't just use strings directly? There are benefits of using Value Objects even for simple attributes such as Name:
+> - No ambiguity when reading code, as the type is spelled out instead of being just a generic type.
+> - If in the future we need to change or add a new attribute to the Value Object, it's done in 1 place.
+> - In languages such as C# .NET, you can use structs for Value Objects, so that they are initialised in stack instead of heap memory, removing the garbage collection penalty. 
+>
+> Having said that, I feel that we can be flexible, especially for single attribute values that we know won't ever change. Or if we care more about time-to-market than longevity.
 
 Something can be a Value Object within a context, but an Entity in another context. It depends on whether or not the identity of that object is important for that context. This is called a _Bounded Context_, which I will describe later.
 
