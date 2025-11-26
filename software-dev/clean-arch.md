@@ -113,6 +113,15 @@ Because Frameworks will eventually screw us. Framework authors have their intere
 
 Uncle Bob even went as far as recommending us to not use the framework author's code examples, because they have incentives to make our apps strongly coupled to their frameworks.
 
+When our focus is in the Business Rules, we can bring them out in front. The technical details are delayed, and the business problems are tackled first. Our folder structure would look more like:
+
+```
+CreateAccount/
+Login/
+MakePurchase/
+ViewOrderSummary/
+```
+
 This is the essence of Clean Architecture.
 
 ## Component Cohesion
