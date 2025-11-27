@@ -14,6 +14,8 @@ So if we know how to build good components and put them together, we can build l
 
 ## The Essence of Clean Architecture
 
+### How it all started
+
 At the beginning, software engineering was very different. Code was structured around technicalities and hardware limitations. It is understandable since computers and toolchains were very limited back then.
 
 This was the norm for a very long time. Even now, it still exists. If we look at the folder structure of an MVC project, it would probably be something like:
@@ -92,11 +94,11 @@ My favourite quote from one of Uncle Bob's presentations:
 
 > The job of the architect is not to make decisions. It's to defer decisions as long as possible, to allow the application to be built in the absence of decisions, so that the decisions can be made later with the most possible information.
 
-There are some decisions that has to be made, such as what language we are using. But apart from those, we can defer decisions such as what database we are using, what UI technology we are using, etc.
+There are some decisions that has to be made, such as what language to use. Apart from those, we can defer decisions such as what database or what UI technology we are using, etc.
 
-Even when we know what database we are using, because our company has invested 20 million into a useless license for some database, we can still pretend that we don't know and defer that decision.
+> Even when we know what database we are using, because our company has invested $20 million into a useless license for some database, we can still pretend that we don't know and defer that decision.
 
-So the architect's job is to maximise the number of decisions to be made later. Imagine something akin to a Plugin Model.
+Imagine something akin to a Plugin Model.
 
 ```mermaid
 flowchart BT
@@ -107,13 +109,13 @@ flowchart BT
 
   UI & D & F --> |Plugs into| U
 ```
-Frameworks include Dependency Injection frameworks. We don't want our Use Case code to know about the UI or the Database, as well as which DI framework we use.
+We don't want our Use Case code to know about the UI or the Database, as well as which DI framework we use. Because Frameworks will eventually screw us. 
 
-Because Frameworks will eventually screw us. Framework authors have their interest in mind, not ours. That is to say, They are a completely different team, different organisation, different goals. They have no commitment to keep their code in alignment with our goals. The same thing applies to UI, Database and all other details.
+Framework authors have their interest in mind, not ours. They are a completely different team, different organisation, different goals. They have no commitment to keep their code in alignment with our goals. The same thing applies to UI, Database and all other details.
 
-Uncle Bob even went as far as recommending us to not use the framework author's code examples, because they have incentives to make our apps strongly coupled to their frameworks.
+Uncle Bob even went as far as recommending us to be wary of the framework author's code examples, because they have incentives to make our apps strongly coupled to their frameworks.
 
-When our focus is in the Business Rules, we can bring them out in front. The technical details are delayed, and the business problems are tackled first. Our folder structure would look more like:
+When our focus is in the Business Rules, we can bring them out in front. The unimportant technical details are delayed, and the important business problems are tackled first. Our folder structure would look more like:
 
 ```
 CreateAccount/
@@ -121,16 +123,137 @@ Login/
 MakePurchase/
 ViewOrderSummary/
 ```
+instead of 
+```
+Models/
+Views/
+Controllers/
+``` 
 
 This is the essence of Clean Architecture.
 
+### The rise of the principles
+
+Designing software is complex. For a lot of us, simply stating to delay decisions till later won't tell us what to put inside a component. Using this essence as the navigational compass, Uncle Bob extracted a set of principles that should help makes this task easier.
+
+These include the [SOLID principles](SOLID.md), and the Component Cohesion and Coupling principles.
+
+Here is an example to demonstrate.
+
+```mermaid
+---
+  config:
+    class:
+      hideEmptyMembersBox: true
+---
+classDiagram
+  direction LR
+  class D["Delivery Mechanism"]
+  class U["User"]
+
+  namespace BusinessRules {
+    class B1["Boundary"] { <<interface>> }
+    class B2["Boundary"] { <<interface>> }
+    class I["Interactor"]
+    class E2["Entities"]
+    class Eg["Entity Gateway"] { <<interface>> }
+  }
+
+  class Egi["Data Storage Mechanism"]
+
+  U <--> D
+  D --|> B1
+  D --> B2
+  B1 <--> I
+  B2 <|-- I
+  I <--> E2
+  I --> Eg
+  Egi --|> Eg
+```
+
+Notice that the arrows that go from the outside to the inside, all point inwards? 
+
+Let me make it even more clear:
+
+```mermaid
+flowchart BT
+  U("Use Case<br/>i.e. Business Rules")
+  UI("UI")
+  D("Database")
+  F("Frameworks")
+
+  UI & D & F --> |Plugs into| U
+```
+Instead of the Business Rules having a direct dependency on a particular Database implementation, we create an abstract Boundary called the Entity Gateway that inverts this relationship. This is called the _Dependency Inversion Principle_, one of the SOLID principles.
+
+If we apply this principle correctly, the arrows will always point towards more stability. This is called the _direction of stability_.
+
+At this point, you are probably starting to see the connection between the essence of Clean Architecture and the SOLID principles, if you have read my [SOLID principles page](SOLID.md).
+
+The SOLID principles are derived from Clean Architecture. They apply to code as well as high level architecture. In my opinion, these principles should be enough to design great software.
+
+But to aid ourselves further, Uncle Bob gave us two more sets of principles, **Component Cohesion** and **Component Coupling**, which are derived from SOLID principles.
+
 ## Component Cohesion
 
+These principles tells us how to group things into a Component to achieve **high cohesion**.
+
 ### Reuse/Release Equivalence Principle (REP)
+
+> The unit of reuse is the the unit of release.
+
+This statement may sound abstract at first, so let me break it down. It has a double meaning.
+
+The first one is very straight forward. It simply says that code should be reused through tracked releases, not through copy/paste. Any decent developer would know this. Tracked releases let the user know that classes and modules that are released together are compatible.
+
+The second meaning is more subtle and important:
+
+Classes and modules within a Component should be **_releasable_** together. 
+
+They must **_make sense_**. 
+
+There should be an **_overarching theme_**.
+
 ### Common Closure Principle (CCP)
+
+> Group together things that change for the same reason and at the same time.
+
+This tells us what to put inside a Component. Classes and modules that serve the same actor, as they will change for the same reason at the same time. 
+
+It is SRP applied to the Component level.
+
+By straying away from this principle, we'd get:
+- Less maintainability, more workload
+- Classes and modules in the Component **_don’t make sense_**
+
 ### Common Reuse Principle (CRP)
 
-https://prodevperspectives.com/post/exploring-clean-architecture
+> Don’t force users to depend on things they don’t need.
+
+This tells us what **not** to put inside a Component. Classes and modules that are not often used together.
+
+It is ISP applied to the Component level.
+
+Otherwise, we'd get:
+- Unstable Component, too many unneeded releases
+- Classes and modules in the component **_don’t make sense_**
+
+### The Triangle of Tension
+
+```mermaid
+block
+  columns 12
+  REP(("REP")):12
+  space:12
+  space:12
+  space:12
+  space:12
+  CCP(("CCP")):4 space:4 CRP(("CRP")):4
+  REP --"Many small releases"--- CCP 
+  CCP --"Hard to reuse<br/>a.k.a. Chaos"--- CRP
+  CRP --"Few big releases"--- REP
+```
+
 
 ## Component Coupling
 
@@ -138,8 +261,12 @@ https://prodevperspectives.com/post/exploring-clean-architecture
 ### Stable Dependencies Principle
 ### Stable Abstraction Principle
 
-Uncle Bob's Clean Architecture presentation:
-[![Uncle Bob's Clean Architecture presentation](https://img.youtube.com/vi/o_TH-Y78tt4/0.jpg)](https://www.youtube.com/watch?v=o_TH-Y78tt4)
+
 
 ## Pros and Cons
 ## Performance Disadvantages of Clean Architecture: A Closer Look
+
+https://prodevperspectives.com/post/exploring-clean-architecture
+
+Uncle Bob's Clean Architecture presentation:
+[![Uncle Bob's Clean Architecture presentation](https://img.youtube.com/vi/o_TH-Y78tt4/0.jpg)](https://www.youtube.com/watch?v=o_TH-Y78tt4)
