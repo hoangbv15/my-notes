@@ -214,6 +214,8 @@ They must **_make sense_**.
 
 There should be an **_overarching theme_**.
 
+How do we decide what makes sense and what constitutes an overarching theme? A lot of it will come from SOLID principles and experience. Also, the next 2 principles will aid us further with this.
+
 ### Common Closure Principle (CCP)
 
 > Group together things that change for the same reason and at the same time.
@@ -225,6 +227,20 @@ It is SRP applied to the Component level.
 By straying away from this principle, we'd get:
 - Less maintainability, more workload
 - Classes and modules in the Component **_don’t make sense_**
+
+```mermaid
+kanban
+  [Shop]
+    [Payment Gateway]
+    [Product Display]
+  [Account]
+    [Invoice Display]
+  [Product Registry]
+    [Data Storage]
+    [Product Register]
+    [Invoice Register]
+
+```
 
 ### Common Reuse Principle (CRP)
 
